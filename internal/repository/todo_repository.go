@@ -71,3 +71,27 @@ func GetAllTodosRepository(pool *pgxpool.Pool) ([]models.Todo, error) {
 
 	return todos, nil
 }
+
+func GetTodoByIdRepository(pool *pgxpool.Pool, id int) (*models.Todo, error) {
+	var ctx context.Context
+	var cancel context.CancelFunc
+
+	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var query string = `
+		SELECT id, title, completed, created_at, updated_at
+		FROM todos
+		WHERE id = $1
+	`
+
+	var todo models.Todo
+	err := pool.QueryRow(ctx, query, id).Scan(&todo.ID, &todo.Title, &todo.Completed, &todo.CreatedAt, &todo.UpdatedAt)
+
+	if err != nil {
+		log.Printf("Unable to get todo: %v", err)
+		return nil, err
+	}
+
+	return &todo, nil
+}

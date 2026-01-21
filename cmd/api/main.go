@@ -48,6 +48,8 @@ func main() {
 
 	router.GET("/todos", handlers.GetAllTodosHandler(pool))
 
+	router.GET("/todo/:id", handlers.GetTodoByIdHandler(pool))
+
 	// Run the server
 	router.Run(":" + cfg.Port)
 }
