@@ -1,21 +1,48 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/solonode/go-learn/internal/config"
+	"github.com/solonode/go-learn/internal/database"
 )
 
 func main() {
+	// Load configuration
+	var cfg *config.Config
+	var err error
+	cfg, err = config.Load()
+
+	if err != nil {
+		log.Fatal("Failed to load configuration", err)
+	}
+
+	// Connect to the database
+	var pool *pgxpool.Pool
+	pool, err = database.Connect(cfg.DatabaseUrl)
+
+	if err != nil {
+		log.Fatal("Failed to connect to the database", err)
+	}
+
+	defer pool.Close() // Close the database connection
+
+	// Initialize Gin
 	var router *gin.Engine = gin.Default()
 
+	// Set trusted proxies
 	router.SetTrustedProxies([]string{"localhost"})
 
 	// Default Route
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "GI API is running",
-			"status": "success",
+			"message": "GIN API is running",
+			"status":  "success",
 		})
 	})
 
-	router.Run(":8000")
+	// Run the server
+	router.Run(":" + cfg.Port)
 }
