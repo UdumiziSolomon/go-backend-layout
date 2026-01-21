@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/solonode/go-learn/internal/config"
 	"github.com/solonode/go-learn/internal/database"
+	"github.com/solonode/go-learn/internal/handlers"
 )
 
 func main() {
@@ -33,7 +34,7 @@ func main() {
 	var router *gin.Engine = gin.Default()
 
 	// Set trusted proxies
-	router.SetTrustedProxies([]string{"localhost"})
+	router.SetTrustedProxies(nil)
 
 	// Default Route
 	router.GET("/", func(c *gin.Context) {
@@ -42,6 +43,8 @@ func main() {
 			"status":  "success",
 		})
 	})
+
+	router.POST("/todo", handlers.CreateTodoHandler(pool))
 
 	// Run the server
 	router.Run(":" + cfg.Port)
