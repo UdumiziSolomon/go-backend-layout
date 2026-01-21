@@ -40,6 +40,6 @@ func Connect(databaseUrl string) (*pgxpool.Pool, error) {
 	}
 
 	// Database is connected
-	log.Println("Connected to database")
+	log.Println("Connected to database was successful")
 	return pool, nil
 }

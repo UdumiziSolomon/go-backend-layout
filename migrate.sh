@@ -17,13 +17,14 @@ MIGRATION_TABLE="schema_migrations"
 # Database Configuration
 # Loads from .env file or environment variable
 # Example formats:
+# PostgreSQL: postgres://user:password@host:port/database
 # PostgreSQL: postgresql://user:password@host:port/database
 # MySQL: mysql://user:password@host:port/database
 DATABASE_URL="${DATABASE_URL:-}"
 
 # Parse database type from URL
 get_db_type() {
-    if [[ $DATABASE_URL == postgresql://* ]] || [[ $DATABASE_URL == postgres://* ]]; then
+    if [[ $DATABASE_URL == postgres://* ]] || [[ $DATABASE_URL == postgresql://* ]]; then
         echo "postgresql"
     elif [[ $DATABASE_URL == mysql://* ]]; then
         echo "mysql"
@@ -66,7 +67,7 @@ check_database_url() {
     if [ -z "$DATABASE_URL" ]; then
         print_error "DATABASE_URL is not set"
         echo "Set it as an environment variable or edit the script"
-        echo "Example: export DATABASE_URL='postgresql://user:password@localhost:5432/mydb'"
+        echo "Example: export DATABASE_URL='postgres://user:password@localhost:5432/mydb'"
         exit 1
     fi
 }
@@ -139,7 +140,8 @@ init_migration_table() {
 
 # Function to get applied migrations
 get_applied_migrations() {
-    execute_query "SELECT version FROM $MIGRATION_TABLE ORDER BY version;" 2>/dev/null || echo ""
+    # Trim whitespace from results
+    execute_query "SELECT version FROM $MIGRATION_TABLE ORDER BY version;" 2>/dev/null | xargs -n1 || echo ""
 }
 
 # Function to get pending migrations
@@ -149,6 +151,8 @@ get_pending_migrations() {
     for file in "$MIGRATIONS_DIR"/*.up.sql; do
         if [ -f "$file" ]; then
             version=$(basename "$file" .up.sql)
+            # Trim whitespace from version
+            version=$(echo "$version" | xargs)
             if ! echo "$applied_migrations" | grep -q "^$version$"; then
                 echo "$version"
             fi
@@ -224,6 +228,19 @@ migrate_down() {
         if [ ! -f "$migration_file" ]; then
             print_error "Rollback file not found: $migration_file"
             exit 1
+        fi
+        
+        # Confirmation prompt
+        echo ""
+        print_warning "You are about to rollback: $version"
+        echo "This will execute: $migration_file"
+        echo ""
+        read -p "Continue? [y/N]: " -n 1 -r
+        echo ""
+        
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "Rollback cancelled"
+            exit 0
         fi
         
         print_warning "Rolling back migration: $version"
