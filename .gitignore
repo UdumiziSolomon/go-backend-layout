@@ -1,0 +1,48 @@
+# ===== Go build outputs =====
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+*.test
+*.out
+
+# Go coverage & profiling
+*.cover
+coverage.*
+profile.*
+cpu.out
+mem.out
+
+# Go workspace / temp
+/go.work
+/go.work.sum
+/tmp
+/bin
+
+# ===== Vendor (ignore only if you don't commit vendor) =====
+/vendor/
+
+# ===== Environment variables =====
+.env
+.env.*
+!.env.example
+
+# ===== Logs =====
+*.log
+
+# ===== IDEs & editors =====
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+*.tmp
+
+# ===== OS files =====
+.DS_Store
+Thumbs.db
+
+# ===== Debug / tooling =====
+__debug_bin
